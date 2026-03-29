@@ -69,11 +69,16 @@ a-stultitia/
 │   ├── pom.xml
 │   └── src/main/
 │       ├── java/net/edwardsonthe/producer/TimeOfDayProducer.java
-│       └── resources/quotes.txt
+│       └── resources/
+│           ├── logback.xml                      # SLF4J/Logback configuration
+│           └── quotes.txt
 └── consumer/
     ├── README.md
     ├── pom.xml
-    └── src/main/java/net/edwardsonthe/consumer/TimeOfDayConsumer.java
+    └── src/main/
+        ├── java/net/edwardsonthe/consumer/TimeOfDayConsumer.java
+        └── resources/
+            └── logback.xml                      # SLF4J/Logback configuration
 ```
 
 ## Components
