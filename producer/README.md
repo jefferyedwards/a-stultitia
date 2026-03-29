@@ -39,6 +39,10 @@ Available at `http://localhost:8081/actuator/`.
 | `dds.topic-name`               | `TimeOfDay`            | DDS topic name                 |
 | `producer.publish-interval-ms` | `2000`                 | Milliseconds between publishes |
 | `producer.quotes-file`         | `classpath:quotes.txt` | Resource path to quotes file   |
+| `kafka.role`                   | `producer`             | Kafka transport role           |
+| `kafka.topic-name`             | `time-of-day`          | Kafka topic name               |
+
+DDS properties are in `application.properties`; Kafka properties are in `application-kafka.properties` (loaded when `spring.profiles.active=kafka`).
 
 ## Dependencies
 
@@ -47,3 +51,4 @@ Available at `http://localhost:8081/actuator/`.
 - **spring-integration-core** — message channels and messaging framework
 - **common** — `TimeOfDayEvent` POJO
 - **dds-support** — DDS transport (activated by `dds` profile)
+- **kafka-support** — Kafka transport (activated by `kafka` profile)
