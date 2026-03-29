@@ -1,0 +1,10 @@
+The only way to do great work is to love what you do. — Steve Jobs
+Innovation distinguishes between a leader and a follower. — Steve Jobs
+Stay hungry, stay foolish. — Steve Jobs
+The best way to predict the future is to invent it. — Alan Kay
+Talk is cheap. Show me the code. — Linus Torvalds
+Any fool can write code that a computer can understand. Good programmers write code that humans can understand. — Martin Fowler
+First, solve the problem. Then, write the code. — John Johnson
+Simplicity is the soul of efficiency. — Austin Freeman
+Make it work, make it right, make it fast. — Kent Beck
+Programs must be written for people to read, and only incidentally for machines to execute. — Harold Abelson

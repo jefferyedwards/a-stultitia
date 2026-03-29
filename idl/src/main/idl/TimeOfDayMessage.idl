@@ -1,0 +1,13 @@
+module net {
+module edwardsonthe {
+module messages {
+
+struct TimeOfDayMessage {
+    string timestamp;   // ISO 8601 format
+    long messageId;     // Incremented starting from 1
+    string quote;       // Quote of the moment
+};
+
+}; // module messages
+}; // module edwardsonthe
+}; // module net
