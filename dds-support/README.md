@@ -1,48 +1,47 @@
 # DDS Support Module
 
-Shared Spring configuration for the RTI Connext DDS `DomainParticipant` lifecycle. Used by both the producer and consumer modules to avoid duplicating DDS setup code.
+RTI Connext DDS support for the tutorial. Provides Spring Integration channel adapters, DDS configuration, health indicator, and shared DDS entity lifecycle management.
 
 ## What It Does
 
-Provides a single `@Configuration` class that creates and manages the DDS `DomainParticipant` as a Spring bean using default QoS. Domain ID and topic name are externalized to `application.properties`.
+Bridges Spring Integration message channels to RTI Connext DDS. Business logic sends/receives `TimeOfDayEvent` POJOs via channels; this module handles conversion to/from DDS `TimeOfDayMessage` and manages the DDS entity lifecycle.
+
+All classes are gated by `@Profile("dds")` — they are only active when DDS is the selected transport.
 
 ## Key Classes
 
-### `DdsParticipantConfig`
-
-`@Configuration` class that:
-
-1. Creates the `DomainParticipant` with default QoS on the configured domain ID
-2. Registers the `TimeOfDayMessage` type
-3. Tears down all DDS entities on Spring context shutdown via `@PreDestroy`
-
-| Bean                | Description                                   |
-| ------------------- | --------------------------------------------- |
-| `DomainParticipant` | Created with default QoS on configured domain |
-
-The `getTopicName()` method exposes the configured topic name so that module-specific configs (producer/consumer) can create their topic, writer, or reader beans.
-
-### `DdsHealthIndicator`
-
-`@Component` implementing Spring Boot's `HealthIndicator` interface. Reports the DDS `DomainParticipant` status at `/actuator/health` under the `"dds"` key. Includes the domain ID and application role (derived from `spring.application.name`) in the health details.
+| Class                       | Role                                                          |
+| --------------------------- | ------------------------------------------------------------- |
+| `DdsParticipantConfig`      | Shared: DomainParticipant, Topic, type registration, cleanup  |
+| `DdsProducerConfig`         | Role-specific: Publisher + DataWriter (`dds.role=producer`)   |
+| `DdsConsumerConfig`         | Role-specific: Subscriber + DataReader (`dds.role=consumer`)  |
+| `DdsOutboundChannelAdapter` | Channel to DDS: converts `TimeOfDayEvent` to DDS and writes   |
+| `DdsInboundChannelAdapter`  | DDS to Channel: converts DDS to `TimeOfDayEvent` and sends    |
+| `DdsHealthIndicator`        | Actuator health check for DomainParticipant status            |
 
 ## Configuration
 
-These properties are read by `DdsParticipantConfig`:
+| Property         | Default     | Description                              |
+| ---------------- | ----------- | ---------------------------------------- |
+| `dds.role`       | (required)  | `producer` or `consumer`                 |
+| `dds.domain-id`  | `0`         | DDS domain ID                            |
+| `dds.topic-name` | `TimeOfDay` | DDS topic name                           |
 
-| Property         | Default     | Description    |
-| ---------------- | ----------- | -------------- |
-| `dds.domain-id`  | `0`         | DDS domain ID  |
-| `dds.topic-name` | `TimeOfDay` | DDS topic name |
+The `dds.role` property controls which role-specific beans are created, allowing a single transport module to serve both roles.
 
-Properties are defined in each application's `application.properties` and can be overridden at runtime via command-line arguments.
+## Consumer Startup Ordering
+
+`DdsConsumerConfig` creates the DataReader in response to `ApplicationReadyEvent` rather than during bean initialization. This ensures Spring Integration channel subscribers (`@ServiceActivator`) are fully wired before DDS starts delivering messages.
 
 ## Component Scanning
 
-Since this module lives in the `net.edwardsonthe.dds` package, Spring Boot's `@SpringBootApplication` in the producer (`net.edwardsonthe.producer`) and consumer (`net.edwardsonthe.consumer`) will auto-scan it — all packages share the `net.edwardsonthe` base.
+Since this module lives in the `net.edwardsonthe.dds` package, Spring Boot's `@SpringBootApplication` with `scanBasePackages = "net.edwardsonthe"` picks it up automatically.
 
 ## Dependencies
 
-- **spring-boot-starter-actuator** — Spring Boot actuator framework and health indicator support
-- **idl** — provides `TimeOfDayMessageTypeSupport` for type registration
+- **spring-integration-core** — Spring Integration channel and messaging framework
+- **spring-boot-starter** — Spring Boot auto-configuration
+- **spring-boot-starter-actuator** (optional) — health indicator support
+- **common** — `TimeOfDayEvent` POJO
+- **idl** — DDS-generated `TimeOfDayMessage` type support classes
 - **nddsjava** — RTI Connext DDS Java API

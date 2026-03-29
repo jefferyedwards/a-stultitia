@@ -47,19 +47,23 @@ a-stultitia/
 │   └── bin/
 │       ├── run-producer.sh
 │       └── run-consumer.sh
+├── common/                    # Shared domain types (TimeOfDayEvent)
+│   ├── README.md
+│   ├── pom.xml
+│   └── src/
 ├── idl/                       # Shared IDL type definitions
 │   ├── README.md
 │   ├── pom.xml
 │   └── src/main/idl/
-├── dds-support/               # Shared DDS Spring configuration
+├── dds-support/               # DDS support — channel adapters and config
 │   ├── README.md
 │   ├── pom.xml
 │   └── src/
-├── producer/                  # Message producer module
+├── producer/                  # Message producer (transport-agnostic)
 │   ├── README.md
 │   ├── pom.xml
 │   └── src/
-└── consumer/                  # Message consumer module
+└── consumer/                  # Message consumer (transport-agnostic)
     ├── README.md
     ├── pom.xml
     └── src/
