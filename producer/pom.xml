@@ -13,7 +13,7 @@
 
   <artifactId>producer</artifactId>
   <name>A Stultitia - Producer</name>
-  <description>DDS message producer — publishes time-of-day messages</description>
+  <description>Message producer — publishes time-of-day messages via Spring Integration</description>
 
   <dependencies>
     <dependency>
@@ -25,13 +25,18 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.springframework.integration</groupId>
+      <artifactId>spring-integration-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>net.edwardsonthe</groupId>
-      <artifactId>dds-support</artifactId>
+      <artifactId>common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.rti.dds</groupId>
-      <artifactId>nddsjava</artifactId>
+      <groupId>net.edwardsonthe</groupId>
+      <artifactId>dds-support</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 

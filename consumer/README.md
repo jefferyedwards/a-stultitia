@@ -1,56 +1,43 @@
 # Consumer Module
 
-A Spring Boot application that subscribes to `TimeOfDayMessage` instances from a DDS topic and logs each received message. Includes actuator endpoints for health monitoring, metrics, and runtime log management.
+A Spring Boot application that receives `TimeOfDayEvent` messages via Spring Integration and logs each one. The consumer has **zero dependency on any messaging transport** — it receives from a channel via `@ServiceActivator`, and the active Spring profile determines the transport (DDS, Kafka, etc.).
 
 ## What It Does
 
-The consumer initializes DDS entities via Spring-managed `@Configuration` beans and registers an asynchronous listener on the DataReader. When messages arrive, the listener logs all fields (messageId, timestamp, quote) and increments a Micrometer counter. The embedded Tomcat server keeps the application alive and serves actuator endpoints.
+The consumer receives `TimeOfDayEvent` messages from the `timeOfDayInboundChannel` and logs all fields (messageId, timestamp, quote). A transport-specific inbound adapter pushes messages into the channel based on the active profile.
 
 ## Key Classes
 
 ### `ConsumerApplication`
 
-`@SpringBootApplication` entry point. Bootstraps the Spring context which initializes DDS and registers the message listener.
+`@SpringBootApplication` entry point. Transport module beans are discovered automatically via Spring Boot's auto-configuration mechanism.
 
-### `DdsConfig`
+### `IntegrationConfig`
 
-`@Configuration` class that creates the DDS topic, subscriber, and data reader with `TimeOfDayConsumer` as the listener. The `DomainParticipant` is provided by `DdsParticipantConfig` in the `dds-support` module.
+Defines the `timeOfDayInboundChannel` as a `DirectChannel`. This channel is profile-independent — it exists regardless of which transport is active.
 
 ### `TimeOfDayConsumer`
 
-`@Component` extending `DataReaderAdapter`. Receives `MeterRegistry` via constructor injection and increments the `dds.messages.received` counter on each valid message. The `on_data_available()` callback executes on a **DDS-managed thread**.
+`@Component` with `@ServiceActivator(inputChannel = "timeOfDayInboundChannel")`. Processes incoming `TimeOfDayEvent` messages. Tracks received messages via `messages.received` Micrometer counter.
 
 ## Actuator Endpoints
 
-Available at `http://localhost:8082/actuator/`:
-
-| Endpoint                                  | Purpose                                |
-| ----------------------------------------- | -------------------------------------- |
-| `/actuator/health`                        | DDS health indicator (domain ID, role) |
-| `/actuator/metrics/dds.messages.received` | Total messages received                |
-| `/actuator/loggers/net.edwardsonthe`      | View/change log levels at runtime      |
-| `/actuator/info`                          | Application name, description, step    |
-| `/actuator/env`                           | Resolved configuration properties      |
+Available at `http://localhost:8082/actuator/`.
 
 ## Configuration
 
-All configuration is externalized in `application.properties`:
-
-| Property         | Default     | Description            |
-| ---------------- | ----------- | ---------------------- |
-| `server.port`    | `8082`      | HTTP port for actuator |
-| `dds.domain-id`  | `0`         | DDS domain ID          |
-| `dds.topic-name` | `TimeOfDay` | DDS topic name         |
-
-Override at runtime without recompilation:
-
-```bash
-java -jar consumer-1.0.0-SNAPSHOT.jar --dds.domain-id=1
-```
+| Property                 | Default     | Description              |
+| ------------------------ | ----------- | ------------------------ |
+| `spring.profiles.active` | `dds`       | Active transport profile |
+| `server.port`            | `8082`      | HTTP port for actuator   |
+| `dds.role`               | `consumer`  | DDS transport role       |
+| `dds.domain-id`          | `0`         | DDS domain ID            |
+| `dds.topic-name`         | `TimeOfDay` | DDS topic name           |
 
 ## Dependencies
 
 - **spring-boot-starter-web** — embedded Tomcat for HTTP endpoints
 - **spring-boot-starter-actuator** — actuator framework and Micrometer metrics
-- **dds-support** — shared DDS participant config and health indicator
-- **nddsjava** — RTI Connext DDS Java API
+- **spring-integration-core** — message channels and messaging framework
+- **common** — `TimeOfDayEvent` POJO
+- **dds-support** — DDS transport (activated by `dds` profile)

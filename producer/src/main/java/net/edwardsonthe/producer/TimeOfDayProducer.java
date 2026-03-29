@@ -1,15 +1,16 @@
 package net.edwardsonthe.producer;
 
-import net.edwardsonthe.messages.TimeOfDayMessage;
-import net.edwardsonthe.messages.TimeOfDayMessageDataWriter;
-import com.rti.dds.infrastructure.InstanceHandle_t;
+import net.edwardsonthe.common.TimeOfDayEvent;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.Resource;
+import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -21,23 +22,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Publishes {@link TimeOfDayMessage} instances to the DDS topic at a configurable interval.
+ * Publishes {@link TimeOfDayEvent} messages at a configurable interval.
  *
- * <p>Each message contains an ISO 8601 timestamp, an incrementing message ID, and a quote
- * loaded from an external file. Quotes are cycled sequentially; after the last quote is
- * published, the cycle restarts from the beginning.
+ * <p>This class has no dependency on any messaging transport (DDS, Kafka, etc.). It sends
+ * {@link TimeOfDayEvent} objects to a Spring Integration {@link MessageChannel}. The
+ * active Spring profile determines which channel adapter delivers the message to the
+ * underlying transport.
  *
  * <p>Implements {@link CommandLineRunner} so the publish loop starts automatically
  * after the Spring context is fully initialized.
- *
- * @see DdsConfig
  */
 @Component
 public class TimeOfDayProducer implements CommandLineRunner {
 
   private static final Logger log = LoggerFactory.getLogger(TimeOfDayProducer.class);
 
-  private final TimeOfDayMessageDataWriter writer;
+  private final MessageChannel outboundChannel;
   private final Counter publishCounter;
   private final List<String> quotes;
   private int quoteIndex = 0;
@@ -47,19 +47,18 @@ public class TimeOfDayProducer implements CommandLineRunner {
   private int publishIntervalMs;
 
   /**
-   * Constructs the producer with an injected DDS data writer, meter registry,
-   * and quotes resource.
+   * Constructs the producer with an outbound channel, meter registry, and quotes resource.
    *
-   * @param writer        the DDS data writer for publishing messages
-   * @param meterRegistry the Micrometer registry for recording metrics
-   * @param quotesFile    the resource containing quotes, one per line
+   * @param outboundChannel the Spring Integration channel to send messages to
+   * @param meterRegistry   the Micrometer registry for recording metrics
+   * @param quotesFile      the resource containing quotes, one per line
    */
-  public TimeOfDayProducer(TimeOfDayMessageDataWriter writer,
+  public TimeOfDayProducer(@Qualifier("timeOfDayOutboundChannel") MessageChannel outboundChannel,
                            MeterRegistry meterRegistry,
                            @Value("${producer.quotes-file:classpath:quotes.txt}") Resource quotesFile) {
-    this.writer = writer;
-    this.publishCounter = Counter.builder("dds.messages.published")
-        .description("Total messages published to DDS")
+    this.outboundChannel = outboundChannel;
+    this.publishCounter = Counter.builder("messages.published")
+        .description("Total messages published")
         .register(meterRegistry);
     this.quotes = loadQuotes(quotesFile);
   }
@@ -83,19 +82,19 @@ public class TimeOfDayProducer implements CommandLineRunner {
   }
 
   /**
-   * Publishes a single {@link TimeOfDayMessage} with the current timestamp,
+   * Publishes a single {@link TimeOfDayEvent} with the current timestamp,
    * an incremented message ID, and the next quote in the cycle.
    */
   private void publish() {
-    TimeOfDayMessage message = new TimeOfDayMessage();
-    message.timestamp = DateTimeFormatter.ISO_INSTANT.format(Instant.now());
-    message.messageId = ++messageId;
-    message.quote = quotes.get(quoteIndex);
+    TimeOfDayEvent event = new TimeOfDayEvent(
+        DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+        ++messageId,
+        quotes.get(quoteIndex));
     quoteIndex = (quoteIndex + 1) % quotes.size();
 
-    writer.write(message, InstanceHandle_t.HANDLE_NIL);
+    outboundChannel.send(MessageBuilder.withPayload(event).build());
     publishCounter.increment();
-    log.info("Published [{}]: {} — {}", message.messageId, message.timestamp, message.quote);
+    log.info("Published [{}]: {} — {}", event.getMessageId(), event.getTimestamp(), event.getQuote());
   }
 
   /**

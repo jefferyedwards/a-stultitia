@@ -4,22 +4,27 @@ import net.edwardsonthe.messages.TimeOfDayMessageTypeSupport;
 import com.rti.dds.domain.DomainParticipant;
 import com.rti.dds.domain.DomainParticipantFactory;
 import com.rti.dds.infrastructure.StatusKind;
+import com.rti.dds.topic.Topic;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
- * Shared Spring configuration for the DDS {@link DomainParticipant}.
+ * Shared DDS infrastructure configuration for RTI Connext DDS.
  *
- * <p>Creates and manages the lifecycle of the DomainParticipant bean using
- * default QoS settings. The participant is torn down in the correct order
- * via {@link #cleanup()}, which is invoked automatically by Spring on
- * context shutdown.
+ * <p>Creates and manages the lifecycle of the {@link DomainParticipant} and
+ * {@link Topic} beans that are common to both producers and consumers.
+ *
+ * <p>Only active when the {@code dds} Spring profile is enabled. Role-specific
+ * beans (DataWriter, DataReader) are created by {@link DdsProducerConfig} and
+ * {@link DdsConsumerConfig} respectively.
  */
 @Configuration
+@Profile("dds")
 public class DdsParticipantConfig {
 
   private static final Logger log = LoggerFactory.getLogger(DdsParticipantConfig.class);
@@ -34,8 +39,7 @@ public class DdsParticipantConfig {
 
   /**
    * Creates the DDS {@link DomainParticipant} with default QoS and registers
-   * the {@link TimeOfDayMessageTypeSupport} so the participant can publish
-   * or subscribe to {@code TimeOfDayMessage} instances.
+   * the {@link TimeOfDayMessageTypeSupport}.
    *
    * @return the configured DomainParticipant
    * @throws RuntimeException if participant creation fails
@@ -61,12 +65,26 @@ public class DdsParticipantConfig {
   }
 
   /**
-   * Returns the configured DDS topic name.
+   * Creates the DDS {@link Topic} for {@code TimeOfDayMessage}.
    *
-   * @return the topic name from properties
+   * @param participant the DDS DomainParticipant to create the topic on
+   * @return the configured Topic
+   * @throws RuntimeException if topic creation fails
    */
-  public String getTopicName() {
-    return topicName;
+  @Bean(destroyMethod = "")
+  public Topic timeOfDayTopic(DomainParticipant participant) {
+    Topic topic = participant.create_topic(
+        topicName,
+        TimeOfDayMessageTypeSupport.get_type_name(),
+        DomainParticipant.TOPIC_QOS_DEFAULT,
+        null,
+        StatusKind.STATUS_MASK_NONE);
+
+    if (topic == null) {
+      throw new RuntimeException("Failed to create Topic '" + topicName + "'");
+    }
+
+    return topic;
   }
 
   /**

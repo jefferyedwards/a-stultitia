@@ -14,6 +14,7 @@
   <description>Step-by-step modernization of a legacy RTI DDS messaging application</description>
 
   <modules>
+    <module>common</module>
     <module>idl</module>
     <module>dds-support</module>
     <module>producer</module>
