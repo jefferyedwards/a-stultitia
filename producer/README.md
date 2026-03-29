@@ -14,7 +14,7 @@ The producer enters a publish loop that sends a `TimeOfDayEvent` to the `timeOfD
 
 ### `ProducerApplication`
 
-`@SpringBootApplication` entry point with `scanBasePackages = "net.edwardsonthe"` to pick up the transport module beans.
+`@SpringBootApplication` entry point. Transport module beans are discovered automatically via Spring Boot's auto-configuration mechanism.
 
 ### `IntegrationConfig`
 
