@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * <p>Bootstraps the Spring application context. The active Spring profile determines
  * which messaging transport is used. Messages are processed by {@link TimeOfDayConsumer}.
  */
-@SpringBootApplication(scanBasePackages = "net.edwardsonthe")
+@SpringBootApplication
 public class ConsumerApplication {
 
   public static void main(String[] args) {

@@ -65,6 +65,7 @@ Expanded with Spring Integration channel adapters and role-specific DDS configs:
 
 | Class                       | Role                                                         |
 | --------------------------- | ------------------------------------------------------------ |
+| `DdsAutoConfiguration`      | Auto-configuration entry point, enables component scanning   |
 | `DdsParticipantConfig`      | Shared: DomainParticipant, Topic, type registration, cleanup |
 | `DdsProducerConfig`         | Role-specific: Publisher + DataWriter (`dds.role=producer`)  |
 | `DdsConsumerConfig`         | Role-specific: Subscriber + DataReader (`dds.role=consumer`) |
@@ -73,6 +74,10 @@ Expanded with Spring Integration channel adapters and role-specific DDS configs:
 | `DdsHealthIndicator`        | Actuator health check for DomainParticipant status           |
 
 All classes are annotated with `@Profile("dds")`. The `dds.role` property controls which role-specific beans are created.
+
+### Auto-Configuration
+
+The `dds-support` module registers itself via Spring Boot's auto-configuration mechanism (`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`). This means `@SpringBootApplication` no longer needs `scanBasePackages` — the transport module is self-configuring when present on the classpath and the `dds` profile is active.
 
 ### Producer and Consumer Simplified
 
@@ -99,6 +104,8 @@ public class TimeOfDayConsumer extends DataReaderAdapter { ... }
 public void handleMessage(Message<TimeOfDayEvent> message) { ... }
 ```
 
+**Application classes simplified:** `scanBasePackages` removed from `@SpringBootApplication` — transport modules are now discovered automatically via auto-configuration.
+
 **Removed from producer and consumer:** `DdsConfig.java` — moved to `dds-support`
 
 ### Metric Names
@@ -124,13 +131,17 @@ a-stultitia/
 ├── dds-support/                                     # EXPANDED — channel adapters added
 │   ├── README.md
 │   ├── pom.xml
-│   └── src/main/java/net/edwardsonthe/dds/
-│       ├── DdsParticipantConfig.java
-│       ├── DdsProducerConfig.java                   # NEW
-│       ├── DdsConsumerConfig.java                   # NEW
-│       ├── DdsOutboundChannelAdapter.java           # NEW
-│       ├── DdsInboundChannelAdapter.java            # NEW
-│       └── DdsHealthIndicator.java
+│   └── src/main/
+│       ├── java/net/edwardsonthe/dds/
+│       │   ├── DdsAutoConfiguration.java            # NEW — auto-configuration entry point
+│       │   ├── DdsParticipantConfig.java
+│       │   ├── DdsProducerConfig.java               # NEW
+│       │   ├── DdsConsumerConfig.java               # NEW
+│       │   ├── DdsOutboundChannelAdapter.java       # NEW
+│       │   ├── DdsInboundChannelAdapter.java        # NEW
+│       │   └── DdsHealthIndicator.java
+│       └── resources/META-INF/spring/
+│           └── ...AutoConfiguration.imports         # NEW
 ├── producer/                                        # SIMPLIFIED — transport-agnostic
 │   ├── README.md
 │   ├── pom.xml
@@ -186,6 +197,7 @@ The entire transport swap in Step 5 requires:
 - `TimeOfDayConsumer` — still receives from `timeOfDayInboundChannel`
 - `IntegrationConfig` — channels are transport-agnostic
 - `TimeOfDayEvent` — the POJO doesn't change
+- `dds-support/` — DDS transport still works with `--spring.profiles.active=dds`
 
 ## Key Improvements over Step 3
 
