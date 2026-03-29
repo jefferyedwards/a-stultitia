@@ -64,15 +64,15 @@ Both producer and consumer now run an embedded Tomcat alongside their DDS messag
 
 ### Actuator Endpoints Enabled
 
-| Endpoint     | URL                     | Purpose                                        |
-| ------------ | ----------------------- | ---------------------------------------------- |
+| Endpoint     | URL                     | Purpose                                         |
+| ------------ | ----------------------- | ----------------------------------------------- |
 | Health       | `/actuator/health`      | Liveness check with custom DDS health indicator |
-| Info         | `/actuator/info`        | Application name, description, tutorial step   |
-| Loggers      | `/actuator/loggers`     | View and change log levels at runtime          |
-| Metrics      | `/actuator/metrics`     | JVM, process, and custom DDS message counters  |
-| Env          | `/actuator/env`         | Resolved configuration properties              |
-| Beans        | `/actuator/beans`       | All Spring beans in the application context    |
-| Config Props | `/actuator/configprops` | Property-to-bean binding details               |
+| Info         | `/actuator/info`        | Application name, description, tutorial step    |
+| Loggers      | `/actuator/loggers`     | View and change log levels at runtime           |
+| Metrics      | `/actuator/metrics`     | JVM, process, and custom DDS message counters   |
+| Env          | `/actuator/env`         | Resolved configuration properties               |
+| Beans        | `/actuator/beans`       | All Spring beans in the application context     |
+| Config Props | `/actuator/configprops` | Property-to-bean binding details                |
 
 ### Custom DDS Health Indicator
 
