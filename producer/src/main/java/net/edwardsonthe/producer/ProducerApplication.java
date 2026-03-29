@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * <p>Bootstraps the Spring application context. The active Spring profile determines
  * which messaging transport is used. The publish loop runs via {@link TimeOfDayProducer}.
  */
-@SpringBootApplication(scanBasePackages = "net.edwardsonthe")
+@SpringBootApplication
 public class ProducerApplication {
 
   public static void main(String[] args) {
