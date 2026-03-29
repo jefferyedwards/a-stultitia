@@ -1,14 +1,13 @@
 # Running the Demo
 
-Instructions for building and running the TimeOfDay producer/consumer demo.
+Instructions for building and running the TimeOfDay producer/consumer demo. Supports both DDS and Kafka transports.
 
 ## Prerequisites
 
 - **JDK 17** or later
 - **Apache Maven 3.9+**
-- **RTI Connext DDS 7.x** (Express or Professional)
+- **RTI Connext DDS 7.x** (required at build time; required at runtime only for DDS profile)
 - `NDDSHOME` environment variable pointing to your RTI Connext installation
-- RTI license file at `$NDDSHOME/rti_license.dat`
 
 ## Build
 
@@ -19,13 +18,13 @@ export NDDSHOME=/path/to/rti_connext_dds-7.6.0
 mvn clean package
 ```
 
-This compiles all modules, generates the IDL type support code, and produces executable fat JARs for the producer and consumer (via `spring-boot-maven-plugin`).
+This compiles all modules and produces executable fat JARs for the producer and consumer.
 
-## Run
+## Run with DDS
 
 Open two terminals. In both, ensure `NDDSHOME` is set.
 
-**Terminal 1 — start the consumer first:**
+**Terminal 1 — start the consumer:**
 
 ```bash
 ./demo/bin/run-consumer.sh
@@ -37,10 +36,26 @@ Open two terminals. In both, ensure `NDDSHOME` is set.
 ./demo/bin/run-producer.sh
 ```
 
+## Run with Kafka
+
+No `NDDSHOME` or RTI installation needed at runtime.
+
+**Terminal 1 — start the consumer (starts embedded Kafka broker):**
+
+```bash
+./demo/bin/run-consumer-kafka.sh
+```
+
+**Terminal 2 — start the producer (connects to the consumer's broker):**
+
+```bash
+./demo/bin/run-producer-kafka.sh
+```
+
 You can also pass Spring Boot property overrides directly:
 
 ```bash
-./demo/bin/run-producer.sh --dds.domain-id=1 --producer.publish-interval-ms=5000
+./demo/bin/run-producer.sh --producer.publish-interval-ms=5000
 ```
 
 ## Expected Output
@@ -90,12 +105,21 @@ Press `Ctrl+C` in either terminal to stop the application gracefully.
 
 ```text
 demo/
-├── README.md                    # This file
+├── README.md                        # This file
 └── bin/
-    ├── run-producer.sh          # Launches the producer (java -jar)
-    └── run-consumer.sh          # Launches the consumer (java -jar)
+    ├── run-producer.sh              # DDS transport
+    ├── run-consumer.sh              # DDS transport
+    ├── run-producer-kafka.sh        # Kafka transport
+    └── run-consumer-kafka.sh        # Kafka transport
 ```
 
-## DDS Configuration
+## Transport Configuration
 
-The DDS `DomainParticipant` is created with default QoS by `DdsParticipantConfig` in the `dds-support` module. Domain ID and topic name are externalized to each module's `application.properties`.
+The active transport is determined by `spring.profiles.active`:
+
+| Profile | Transport       | Run scripts                      | NDDSHOME required |
+| ------- | --------------- | -------------------------------- | ----------------- |
+| `dds`   | RTI Connext DDS | `run-producer/consumer.sh`       | Yes               |
+| `kafka` | Apache Kafka    | `run-producer/consumer-kafka.sh` | No                |
+
+Both transports coexist in the same build artifact — only the active profile determines which one is used.

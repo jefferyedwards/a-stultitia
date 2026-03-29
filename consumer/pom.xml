@@ -38,6 +38,11 @@
       <artifactId>dds-support</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>net.edwardsonthe</groupId>
+      <artifactId>kafka-support</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
