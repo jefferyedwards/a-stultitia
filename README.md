@@ -41,12 +41,18 @@ Each step branch includes a `STEP-<n>.md` file documenting what the step achieve
 a-stultitia/
 ├── pom.xml                    # Parent reactor POM
 ├── README.md                  # This file
-├── STEP-1.md                  # Step 1 tutorial narrative
+├── STEP-1.md                  # Step 1: Raw RTI DDS Producer/Consumer
+├── STEP-2.md                  # Step 2: Spring Boot Conversion
+├── STEP-3.md                  # Step 3: Spring Boot Actuators
+├── STEP-4.md                  # Step 4: Spring Integration
+├── STEP-5.md                  # Step 5: Kafka Transport Swap
 ├── demo/                      # Runtime scripts and configuration
 │   ├── README.md              # Build, run, and test instructions
 │   └── bin/
 │       ├── run-producer.sh
-│       └── run-consumer.sh
+│       ├── run-consumer.sh
+│       ├── run-producer-kafka.sh
+│       └── run-consumer-kafka.sh
 ├── common/                    # Shared domain types (TimeOfDayEvent)
 │   ├── README.md
 │   ├── pom.xml
