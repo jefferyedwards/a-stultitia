@@ -41,7 +41,7 @@ Each step branch includes a `STEP-<n>.md` file documenting what the step achieve
 a-stultitia/
 ├── pom.xml                    # Parent reactor POM
 ├── README.md                  # This file
-├── STEP-1.md                  # Step 1 tutorial narrative
+├── STEP-1.md                  # Step 1: Raw RTI DDS Producer/Consumer
 ├── demo/                      # Runtime scripts and configuration
 │   ├── README.md              # Build, run, and test instructions
 │   ├── bin/
