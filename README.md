@@ -44,15 +44,17 @@ a-stultitia/
 ├── STEP-1.md                  # Step 1 tutorial narrative
 ├── demo/                      # Runtime scripts and configuration
 │   ├── README.md              # Build, run, and test instructions
-│   ├── bin/
-│   │   ├── run-producer.sh
-│   │   └── run-consumer.sh
-│   └── etc/
-│       └── USER_QOS_PROFILES.xml
+│   └── bin/
+│       ├── run-producer.sh
+│       └── run-consumer.sh
 ├── idl/                       # Shared IDL type definitions
 │   ├── README.md
 │   ├── pom.xml
 │   └── src/main/idl/
+├── dds-support/               # Shared DDS Spring configuration
+│   ├── README.md
+│   ├── pom.xml
+│   └── src/
 ├── producer/                  # Message producer module
 │   ├── README.md
 │   ├── pom.xml

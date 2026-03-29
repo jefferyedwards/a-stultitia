@@ -1,55 +1,69 @@
 # Producer Module
 
-A standalone Java application that publishes `TimeOfDayMessage` instances to a DDS topic at a fixed interval.
+A Spring Boot application that publishes `TimeOfDayMessage` instances to a DDS topic at a configurable interval.
 
 ## What It Does
 
-The producer creates a DDS DomainParticipant, registers the `TimeOfDayMessage` type, and enters a publish loop that sends a message every 2 seconds. Each message contains:
+The producer initializes DDS entities via Spring-managed `@Configuration` beans, then enters a publish loop that sends a message at a configurable interval (default: every 2 seconds). Each message contains:
 
 - **timestamp** — current time in ISO 8601 format
 - **messageId** — incrementing counter starting from 1
-- **quote** — cycled sequentially from `quotes.txt`
+- **quote** — cycled sequentially from a configurable quotes file
 
 After the last quote is published, the cycle restarts from the beginning.
 
-## Key Class
+## Key Classes
 
-**`net.edwardsonthe.producer.TimeOfDayProducer`**
+### `ProducerApplication`
 
-| Method       | Description                                                                    |
-| ------------ | ------------------------------------------------------------------------------ |
-| `start()`    | Creates all DDS entities: DomainParticipant, Topic, Publisher, DataWriter      |
-| `publish()`  | Builds and writes a single `TimeOfDayMessage`                                  |
-| `shutdown()` | Tears down DDS entities in the correct order                                   |
-| `main()`     | Entry point — registers a JVM shutdown hook, starts DDS, runs the publish loop |
+`@SpringBootApplication` entry point. Bootstraps the Spring context which initializes DDS and starts the publish loop.
 
-## DDS Entity Lifecycle
+### `DdsConfig`
 
-```text
-DomainParticipantFactory
-  └─ DomainParticipant (domain 0)
-       ├─ Topic ("TimeOfDay", TimeOfDayMessage type)
-       └─ Publisher
-            └─ DataWriter (TimeOfDayMessageDataWriter)
-```
+`@Configuration` class that creates DDS entities as Spring beans from externalized properties:
 
-All entities are created in `start()` and destroyed in `shutdown()` via `delete_contained_entities()`.
+| Bean                         | Description                                   |
+| ---------------------------- | --------------------------------------------- |
+| `DomainParticipant`          | Created with default QoS on configured domain |
+| `TimeOfDayMessageDataWriter` | Typed writer for publishing messages          |
+
+`@PreDestroy` handles orderly DDS teardown on application shutdown.
+
+### `TimeOfDayProducer`
+
+`@Component` implementing `CommandLineRunner`. Receives the `TimeOfDayMessageDataWriter` via constructor injection and runs the publish loop after the Spring context is fully initialized.
+
+| Method      | Description                                                         |
+| ----------- | ------------------------------------------------------------------- |
+| `run()`     | CommandLineRunner entry — starts the publish loop                   |
+| `publish()` | Builds and writes a single `TimeOfDayMessage`                       |
 
 ## Configuration
 
-All configuration is currently hard-coded as constants:
+All configuration is externalized in `application.properties`:
 
-| Constant              | Value         | Description                    |
-| --------------------- | ------------- | ------------------------------ |
-| `DOMAIN_ID`           | `0`           | DDS domain ID                  |
-| `TOPIC_NAME`          | `"TimeOfDay"` | DDS topic name                 |
-| `PUBLISH_INTERVAL_MS` | `2000`        | Milliseconds between publishes |
+| Property                       | Default                | Description                     |
+| ------------------------------ | ---------------------- | ------------------------------- |
+| `dds.domain-id`                | `0`                    | DDS domain ID                   |
+| `dds.topic-name`               | `TimeOfDay`            | DDS topic name                  |
+| `dds.transport`                | `UDPv4`                | DDS transport                   |
+| `dds.discovery.peers`          | `127.0.0.1`            | Comma-separated discovery peers |
+| `producer.publish-interval-ms` | `2000`                 | Milliseconds between publishes  |
+| `producer.quotes-file`         | `classpath:quotes.txt` | Resource path to quotes file    |
+
+Override at runtime without recompilation:
+
+```bash
+java -jar producer-1.0.0-SNAPSHOT.jar --dds.domain-id=1 --producer.publish-interval-ms=5000
+```
 
 ## Resources
 
 - [src/main/resources/quotes.txt](src/main/resources/quotes.txt) — 10 quotes loaded at startup and cycled through sequentially
+- [src/main/resources/application.properties](src/main/resources/application.properties) — default configuration
 
 ## Dependencies
 
-- **idl** — provides `TimeOfDayMessage`, `TimeOfDayMessageDataWriter`, `TimeOfDayMessageTypeSupport`
+- **spring-boot-starter** — Spring Boot auto-configuration, SLF4J/Logback logging
+- **idl** — provides generated `TimeOfDayMessage` type support classes
 - **nddsjava** — RTI Connext DDS Java API

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Launches the TimeOfDay Producer.
+# Launches the TimeOfDay Producer (Spring Boot).
 # Requires NDDSHOME to be set to the RTI Connext DDS installation directory.
 #
 
@@ -24,7 +24,7 @@ if [ ! -d "$NDDSHOME" ]; then
     exit 1
 fi
 
-# --- Detect platform and architecture ---
+# --- Detect platform and set native library path ---
 
 OS="$(uname -s)"
 ARCH="$(uname -m)"
@@ -52,20 +52,10 @@ case "$OS" in
         ;;
 esac
 
-# --- Build classpath ---
-
-RTI_JAR_DIR="${NDDSHOME}/lib/java"
-IDL_JAR="${PROJECT_DIR}/idl/target/idl-1.0.0-SNAPSHOT.jar"
-CLASSPATH="${PROJECT_DIR}/producer/target/producer-1.0.0-SNAPSHOT.jar"
-CLASSPATH="${CLASSPATH}:${IDL_JAR}"
-CLASSPATH="${CLASSPATH}:${RTI_JAR_DIR}/nddsjava.jar"
-CLASSPATH="${CLASSPATH}:${PROJECT_DIR}/producer/target/lib/*"
-
 # --- Run ---
 
 echo "Starting TimeOfDay Producer..."
 echo "  NDDSHOME: $NDDSHOME"
 echo "  RTI_ARCH: $RTI_ARCH"
 
-cd "$DEMO_DIR"
-java -cp "$CLASSPATH" net.edwardsonthe.producer.TimeOfDayProducer "$@"
+java -jar "${PROJECT_DIR}/producer/target/producer-1.0.0-SNAPSHOT.jar" "$@"

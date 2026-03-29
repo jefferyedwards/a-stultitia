@@ -11,9 +11,9 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>consumer</artifactId>
-  <name>A Stultitia - Consumer</name>
-  <description>DDS message consumer — subscribes to time-of-day messages</description>
+  <artifactId>dds-support</artifactId>
+  <name>A Stultitia - DDS Support</name>
+  <description>Shared Spring configuration for RTI Connext DDS participant lifecycle</description>
 
   <dependencies>
     <dependency>
@@ -22,7 +22,7 @@
     </dependency>
     <dependency>
       <groupId>net.edwardsonthe</groupId>
-      <artifactId>dds-support</artifactId>
+      <artifactId>idl</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -30,13 +30,4 @@
       <artifactId>nddsjava</artifactId>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
 </project>

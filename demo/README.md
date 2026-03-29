@@ -19,7 +19,7 @@ export NDDSHOME=/path/to/rti_connext_dds-7.6.0
 mvn clean package
 ```
 
-This compiles all modules and generates the IDL type support code automatically during the build.
+This compiles all modules, generates the IDL type support code, and produces executable fat JARs for the producer and consumer (via `spring-boot-maven-plugin`).
 
 ## Run
 
@@ -37,6 +37,12 @@ Open two terminals. In both, ensure `NDDSHOME` is set.
 ./demo/bin/run-producer.sh
 ```
 
+You can also pass Spring Boot property overrides directly:
+
+```bash
+./demo/bin/run-producer.sh --dds.domain-id=1 --producer.publish-interval-ms=5000
+```
+
 ## Expected Output
 
 **Producer:**
@@ -45,11 +51,21 @@ Open two terminals. In both, ensure `NDDSHOME` is set.
 Starting TimeOfDay Producer...
   NDDSHOME: /path/to/rti_connext_dds-7.6.0
   RTI_ARCH: arm64Darwin23clang16.0
-INFO: Loaded 10 quotes
-INFO: DDS DomainParticipant created on domain 0
-INFO: Publishing on topic 'TimeOfDay'
-INFO: Published [1]: 2026-03-29T12:00:00.000Z — The only way to do great work is to love what you do. — Steve Jobs
-INFO: Published [2]: 2026-03-29T12:00:02.000Z — Innovation distinguishes between a leader and a follower. — Steve Jobs
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+INFO --- n.e.producer.ProducerApplication  : Starting ProducerApplication
+INFO --- n.e.producer.DdsConfig            : DDS DomainParticipant created on domain 0
+INFO --- n.e.producer.DdsConfig            : Publishing on topic 'TimeOfDay'
+INFO --- n.e.producer.TimeOfDayProducer    : Loaded 10 quotes
+INFO --- n.e.producer.ProducerApplication  : Started ProducerApplication in 0.35 seconds
+INFO --- n.e.producer.TimeOfDayProducer    : Publishing every 2000ms
+INFO --- n.e.producer.TimeOfDayProducer    : Published [1]: 2026-03-29T12:00:00Z — The only way to do great work is to love what you do. — Steve Jobs
 ```
 
 **Consumer:**
@@ -58,11 +74,12 @@ INFO: Published [2]: 2026-03-29T12:00:02.000Z — Innovation distinguishes betwe
 Starting TimeOfDay Consumer...
   NDDSHOME: /path/to/rti_connext_dds-7.6.0
   RTI_ARCH: arm64Darwin23clang16.0
-INFO: DDS DomainParticipant created on domain 0
-INFO: Subscribed to topic 'TimeOfDay'
-INFO: Consumer running. Press Ctrl+C to exit.
-INFO: Received [1]: 2026-03-29T12:00:00.000Z — The only way to do great work is to love what you do. — Steve Jobs
-INFO: Received [2]: 2026-03-29T12:00:02.000Z — Innovation distinguishes between a leader and a follower. — Steve Jobs
+
+INFO --- n.e.consumer.ConsumerApplication  : Starting ConsumerApplication
+INFO --- n.e.consumer.DdsConfig            : DDS DomainParticipant created on domain 0
+INFO --- n.e.consumer.DdsConfig            : Subscribed to topic 'TimeOfDay'
+INFO --- n.e.consumer.ConsumerApplication  : Started ConsumerApplication in 0.36 seconds
+INFO --- n.e.consumer.TimeOfDayConsumer    : Received [1]: 2026-03-29T12:00:00Z — The only way to do great work is to love what you do. — Steve Jobs
 ```
 
 Press `Ctrl+C` in either terminal to stop the application gracefully.
@@ -72,19 +89,11 @@ Press `Ctrl+C` in either terminal to stop the application gracefully.
 ```text
 demo/
 ├── README.md                    # This file
-├── bin/
-│   ├── run-producer.sh          # Launches the producer
-│   └── run-consumer.sh          # Launches the consumer
-└── etc/
-    └── USER_QOS_PROFILES.xml    # DDS QoS configuration (UDPv4, localhost discovery)
+└── bin/
+    ├── run-producer.sh          # Launches the producer (java -jar)
+    └── run-consumer.sh          # Launches the consumer (java -jar)
 ```
 
-## QoS Configuration
+## DDS Configuration
 
-The `etc/USER_QOS_PROFILES.xml` file configures the DDS middleware:
-
-- **Transport:** UDPv4 only (no shared memory)
-- **Discovery:** Unicast peers on `127.0.0.1` (localhost only, multicast disabled)
-- **Profile:** `AStultitiaLibrary::DefaultProfile` — loaded automatically by RTI when the file is in the working directory
-
-The run scripts `cd` into the `demo/` directory before launching Java so that RTI picks up the QoS file from `etc/`.
+The DDS `DomainParticipant` is created with default QoS by `DdsParticipantConfig` in the `dds-support` module. Domain ID and topic name are externalized to each module's `application.properties`.

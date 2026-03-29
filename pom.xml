@@ -15,6 +15,7 @@
 
   <modules>
     <module>idl</module>
+    <module>dds-support</module>
     <module>producer</module>
     <module>consumer</module>
   </modules>
@@ -25,9 +26,8 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!-- Logging -->
-    <slf4j.version>2.0.16</slf4j.version>
-    <logback.version>1.5.16</logback.version>
+    <!-- Spring Boot -->
+    <spring-boot.version>3.4.4</spring-boot.version>
 
     <!-- RTI Connext DDS -->
     <!-- Set NDDSHOME environment variable or override this property -->
@@ -38,14 +38,11 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${logback.version}</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>com.rti.dds</groupId>
@@ -75,20 +72,17 @@
           <version>3.4.2</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.8.1</version>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+          <configuration>
+            <includeSystemScope>true</includeSystemScope>
+          </configuration>
           <executions>
             <execution>
-              <id>copy-dependencies</id>
-              <phase>package</phase>
               <goals>
-                <goal>copy-dependencies</goal>
+                <goal>repackage</goal>
               </goals>
-              <configuration>
-                <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                <excludeScope>system</excludeScope>
-              </configuration>
             </execution>
           </executions>
         </plugin>

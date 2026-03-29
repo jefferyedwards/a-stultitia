@@ -1,55 +1,58 @@
 # Consumer Module
 
-A standalone Java application that subscribes to `TimeOfDayMessage` instances from a DDS topic and logs each received message.
+A Spring Boot application that subscribes to `TimeOfDayMessage` instances from a DDS topic and logs each received message.
 
 ## What It Does
 
-The consumer creates a DDS DomainParticipant, registers the `TimeOfDayMessage` type, and attaches an asynchronous listener to a DataReader. When messages arrive, the listener logs all fields (messageId, timestamp, quote) to stdout. The main thread blocks on a `CountDownLatch` until a shutdown signal (Ctrl+C) is received.
+The consumer initializes DDS entities via Spring-managed `@Configuration` beans and registers an asynchronous listener on the DataReader. When messages arrive, the listener logs all fields (messageId, timestamp, quote). The Spring Boot application stays alive as long as the context is open — no `CountDownLatch` needed.
 
-## Key Class
+## Key Classes
 
-**`net.edwardsonthe.consumer.TimeOfDayConsumer`**
+### `ConsumerApplication`
 
-| Method            | Description                                                                              |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| `start()`         | Creates all DDS entities: DomainParticipant, Topic, Subscriber, DataReader with listener |
-| `awaitShutdown()` | Blocks the main thread until `shutdown()` is called                                      |
-| `shutdown()`      | Tears down DDS entities and releases the latch                                           |
-| `main()`          | Entry point — registers a JVM shutdown hook, starts DDS, blocks until terminated         |
+`@SpringBootApplication` entry point. Bootstraps the Spring context which initializes DDS and registers the message listener.
 
-### Inner Class: `TimeOfDayListener`
+### `DdsConfig`
 
-Extends `DataReaderAdapter` and overrides `on_data_available()`:
+`@Configuration` class that creates DDS entities as Spring beans from externalized properties:
+
+| Bean                         | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| `DomainParticipant`          | Created with default QoS on configured domain                |
+| `TimeOfDayMessageDataReader` | Typed reader with `TimeOfDayConsumer` registered as listener |
+
+`@PreDestroy` handles orderly DDS teardown on application shutdown.
+
+### `TimeOfDayConsumer`
+
+`@Component` extending `DataReaderAdapter`. Registered as the DDS data reader listener in `DdsConfig`. The `on_data_available()` callback:
 
 1. Casts the generic `DataReader` to `TimeOfDayMessageDataReader`
 2. Calls `take()` to consume all available samples
 3. Iterates over the sample sequence, logging each valid message
 4. Returns the loan to DDS in a `finally` block
 
-The listener callback executes on a **DDS-managed thread**, not the main thread.
-
-## DDS Entity Lifecycle
-
-```text
-DomainParticipantFactory
-  └─ DomainParticipant (domain 0)
-       ├─ Topic ("TimeOfDay", TimeOfDayMessage type)
-       └─ Subscriber
-            └─ DataReader (with TimeOfDayListener)
-```
-
-All entities are created in `start()` and destroyed in `shutdown()` via `delete_contained_entities()`.
+The callback executes on a **DDS-managed thread**, not a Spring-managed thread.
 
 ## Configuration
 
-All configuration is currently hard-coded as constants:
+All configuration is externalized in `application.properties`:
 
-| Constant     | Value         | Description    |
-| ------------ | ------------- | -------------- |
-| `DOMAIN_ID`  | `0`           | DDS domain ID  |
-| `TOPIC_NAME` | `"TimeOfDay"` | DDS topic name |
+| Property              | Default     | Description                     |
+| --------------------- | ----------- | ------------------------------- |
+| `dds.domain-id`       | `0`         | DDS domain ID                   |
+| `dds.topic-name`      | `TimeOfDay` | DDS topic name                  |
+| `dds.transport`       | `UDPv4`     | DDS transport                   |
+| `dds.discovery.peers` | `127.0.0.1` | Comma-separated discovery peers |
+
+Override at runtime without recompilation:
+
+```bash
+java -jar consumer-1.0.0-SNAPSHOT.jar --dds.domain-id=1
+```
 
 ## Dependencies
 
-- **idl** — provides `TimeOfDayMessage`, `TimeOfDayMessageDataReader`, `TimeOfDayMessageSeq`, `TimeOfDayMessageTypeSupport`
+- **spring-boot-starter** — Spring Boot auto-configuration, SLF4J/Logback logging
+- **idl** — provides generated `TimeOfDayMessage` type support classes
 - **nddsjava** — RTI Connext DDS Java API
