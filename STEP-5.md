@@ -82,7 +82,7 @@ For this tutorial, we use Spring Kafka's `EmbeddedKafkaKraftBroker` (KRaft mode,
 
 ### New Module: `kafka-support/`
 
-Mirrors the `dds-support/` module pattern:
+Mirrors the `dds-support/` module pattern, including the auto-configuration mechanism introduced in Step 4 — the module is self-registering via `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`, so no `scanBasePackages` is needed:
 
 | Class                         | Role                                                       |
 | ----------------------------- | ---------------------------------------------------------- |
@@ -93,10 +93,6 @@ Mirrors the `dds-support/` module pattern:
 | `KafkaOutboundChannelAdapter` | `@ServiceActivator` on outbound channel to Kafka topic     |
 | `KafkaInboundChannelAdapter`  | `@KafkaListener` to inbound channel                        |
 | `KafkaHealthIndicator`        | Actuator health check for Kafka transport                  |
-
-### Auto-Configuration for Both Transport Modules
-
-Both `dds-support` and `kafka-support` now register via Spring Boot auto-configuration (`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`). This means `@SpringBootApplication` no longer needs `scanBasePackages` — transport modules are self-configuring.
 
 ### New: Profile-Specific Properties
 
@@ -127,12 +123,7 @@ a-stultitia/
 │       └── run-consumer-kafka.sh                    # NEW — Kafka transport
 ├── common/                                          # Unchanged
 ├── idl/                                             # Unchanged
-├── dds-support/                                     # MODIFIED — added auto-configuration
-│   └── src/main/
-│       ├── java/net/edwardsonthe/dds/
-│       │   └── DdsAutoConfiguration.java            # NEW
-│       └── resources/META-INF/spring/
-│           └── ...AutoConfiguration.imports         # NEW
+├── dds-support/                                     # Unchanged
 ├── kafka-support/                                   # NEW — Kafka transport module
 │   ├── pom.xml
 │   └── src/main/
@@ -198,7 +189,7 @@ Both transports coexist in the same build artifact.
 | 1    | Raw RTI DDS, shell scripts, SLF4J logging             | Baseline legacy application         |
 | 2    | Spring Boot, externalized config, fat JARs            | Framework adoption                  |
 | 3    | Actuators: health, metrics, loggers                   | Operational visibility              |
-| 4    | Spring Integration channels, shared transport modules | Messaging abstraction               |
+| 4    | Spring Integration, transport auto-configuration      | Messaging abstraction               |
 | 5    | Kafka transport via profile swap                      | Configuration-driven infrastructure |
 
 The producer and consumer **business logic has not changed since Step 4**. The messaging transport is an infrastructure concern, configured by properties — exactly as it should be.
