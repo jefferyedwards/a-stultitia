@@ -17,6 +17,7 @@
     <module>common</module>
     <module>idl</module>
     <module>dds-support</module>
+    <module>kafka-support</module>
     <module>producer</module>
     <module>consumer</module>
   </modules>

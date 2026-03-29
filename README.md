@@ -58,7 +58,11 @@ a-stultitia/
 │   ├── README.md
 │   ├── pom.xml
 │   └── src/main/idl/
-├── dds-support/               # DDS support — channel adapters and config
+├── dds-support/               # DDS transport — channel adapters and config
+│   ├── README.md
+│   ├── pom.xml
+│   └── src/
+├── kafka-support/             # Kafka transport — channel adapters and broker
 │   ├── README.md
 │   ├── pom.xml
 │   └── src/
