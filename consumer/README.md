@@ -26,13 +26,19 @@ Available at `http://localhost:8082/actuator/`.
 
 ## Configuration
 
-| Property                 | Default     | Description              |
-| ------------------------ | ----------- | ------------------------ |
-| `spring.profiles.active` | `dds`       | Active transport profile |
-| `server.port`            | `8082`      | HTTP port for actuator   |
-| `dds.role`               | `consumer`  | DDS transport role       |
-| `dds.domain-id`          | `0`         | DDS domain ID            |
-| `dds.topic-name`         | `TimeOfDay` | DDS topic name           |
+| Property                 | Default              | Description                 |
+| ------------------------ | -------------------- | --------------------------- |
+| `spring.profiles.active` | `dds`                | Active transport profile    |
+| `server.port`            | `8082`               | HTTP port for actuator      |
+| `dds.role`               | `consumer`           | DDS transport role          |
+| `dds.domain-id`          | `0`                  | DDS domain ID               |
+| `dds.topic-name`         | `TimeOfDay`          | DDS topic name              |
+| `kafka.role`             | `consumer`           | Kafka transport role        |
+| `kafka.topic-name`       | `time-of-day`        | Kafka topic name            |
+| `kafka.group-id`         | `timeofday-consumer` | Kafka consumer group ID     |
+| `kafka.broker.embedded`  | `true`               | Start embedded KRaft broker |
+
+DDS properties are in `application.properties`; Kafka properties are in `application-kafka.properties` (loaded when `spring.profiles.active=kafka`).
 
 ## Dependencies
 
@@ -41,3 +47,4 @@ Available at `http://localhost:8082/actuator/`.
 - **spring-integration-core** — message channels and messaging framework
 - **common** — `TimeOfDayEvent` POJO
 - **dds-support** — DDS transport (activated by `dds` profile)
+- **kafka-support** — Kafka transport (activated by `kafka` profile)
