@@ -12,6 +12,7 @@ All classes are gated by `@Profile("dds")` — they are only active when DDS is 
 
 | Class                       | Role                                                          |
 | --------------------------- | ------------------------------------------------------------- |
+| `DdsAutoConfiguration`      | Auto-configuration entry point, enables component scanning    |
 | `DdsParticipantConfig`      | Shared: DomainParticipant, Topic, type registration, cleanup  |
 | `DdsProducerConfig`         | Role-specific: Publisher + DataWriter (`dds.role=producer`)   |
 | `DdsConsumerConfig`         | Role-specific: Subscriber + DataReader (`dds.role=consumer`)  |
@@ -33,9 +34,9 @@ The `dds.role` property controls which role-specific beans are created, allowing
 
 `DdsConsumerConfig` creates the DataReader in response to `ApplicationReadyEvent` rather than during bean initialization. This ensures Spring Integration channel subscribers (`@ServiceActivator`) are fully wired before DDS starts delivering messages.
 
-## Component Scanning
+## Auto-Configuration
 
-Since this module lives in the `net.edwardsonthe.dds` package, Spring Boot's `@SpringBootApplication` with `scanBasePackages = "net.edwardsonthe"` picks it up automatically.
+This module registers itself via Spring Boot's auto-configuration mechanism (`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`). Applications do not need `scanBasePackages` — the module is self-configuring when present on the classpath and the `dds` profile is active.
 
 ## Dependencies
 

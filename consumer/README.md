@@ -10,7 +10,7 @@ The consumer receives `TimeOfDayEvent` messages from the `timeOfDayInboundChanne
 
 ### `ConsumerApplication`
 
-`@SpringBootApplication` entry point with `scanBasePackages = "net.edwardsonthe"` to pick up the transport module beans.
+`@SpringBootApplication` entry point. Transport module beans are discovered automatically via Spring Boot's auto-configuration mechanism.
 
 ### `IntegrationConfig`
 

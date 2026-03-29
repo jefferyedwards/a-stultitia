@@ -58,6 +58,49 @@ You can also pass Spring Boot property overrides directly:
 ./demo/bin/run-producer.sh --producer.publish-interval-ms=5000
 ```
 
+## Expected Output
+
+**Producer:**
+
+```text
+Starting TimeOfDay Producer...
+  NDDSHOME: /path/to/rti_connext_dds-7.6.0
+  RTI_ARCH: arm64Darwin23clang16.0
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+INFO --- n.e.producer.ProducerApplication    : Starting ProducerApplication
+INFO --- n.e.producer.ProducerApplication    : The following 1 profile is active: "dds"
+INFO --- n.edwardsonthe.dds.DdsParticipantConfig : DDS DomainParticipant created on domain 0
+INFO --- n.edwardsonthe.dds.DdsProducerConfig    : DDS DataWriter created for topic 'TimeOfDay'
+INFO --- n.e.producer.TimeOfDayProducer      : Loaded 10 quotes
+INFO --- n.e.producer.ProducerApplication    : Started ProducerApplication in 0.35 seconds
+INFO --- n.e.producer.TimeOfDayProducer      : Publishing every 2000ms
+INFO --- n.e.producer.TimeOfDayProducer      : Published [1]: 2026-03-29T12:00:00Z — The only way to do great work is to love what you do. — Steve Jobs
+```
+
+**Consumer:**
+
+```text
+Starting TimeOfDay Consumer...
+  NDDSHOME: /path/to/rti_connext_dds-7.6.0
+  RTI_ARCH: arm64Darwin23clang16.0
+
+INFO --- n.e.consumer.ConsumerApplication      : Starting ConsumerApplication
+INFO --- n.e.consumer.ConsumerApplication      : The following 1 profile is active: "dds"
+INFO --- n.edwardsonthe.dds.DdsParticipantConfig : DDS DomainParticipant created on domain 0
+INFO --- n.edwardsonthe.dds.DdsConsumerConfig    : DDS DataReader created for topic 'TimeOfDay'
+INFO --- n.e.consumer.ConsumerApplication      : Started ConsumerApplication in 0.36 seconds
+INFO --- n.e.consumer.TimeOfDayConsumer        : Received [1]: 2026-03-29T12:00:00Z — The only way to do great work is to love what you do. — Steve Jobs
+```
+
+Press `Ctrl+C` in either terminal to stop the application gracefully.
+
 ## Directory Layout
 
 ```text
