@@ -1,6 +1,6 @@
 # Producer Module
 
-A Spring Boot application that publishes `TimeOfDayMessage` instances to a DDS topic at a configurable interval.
+A Spring Boot application that publishes `TimeOfDayMessage` instances to a DDS topic at a configurable interval. Includes actuator endpoints for health monitoring, metrics, and runtime log management.
 
 ## What It Does
 
@@ -20,23 +20,23 @@ After the last quote is published, the cycle restarts from the beginning.
 
 ### `DdsConfig`
 
-`@Configuration` class that creates DDS entities as Spring beans from externalized properties:
-
-| Bean                         | Description                                   |
-| ---------------------------- | --------------------------------------------- |
-| `DomainParticipant`          | Created with default QoS on configured domain |
-| `TimeOfDayMessageDataWriter` | Typed writer for publishing messages          |
-
-`@PreDestroy` handles orderly DDS teardown on application shutdown.
+`@Configuration` class that creates the DDS topic, publisher, and data writer. The `DomainParticipant` is provided by `DdsParticipantConfig` in the `dds-support` module.
 
 ### `TimeOfDayProducer`
 
-`@Component` implementing `CommandLineRunner`. Receives the `TimeOfDayMessageDataWriter` via constructor injection and runs the publish loop after the Spring context is fully initialized.
+`@Component` implementing `CommandLineRunner`. Receives the `TimeOfDayMessageDataWriter` and `MeterRegistry` via constructor injection. Publishes messages and increments the `dds.messages.published` Micrometer counter on each publish.
 
-| Method      | Description                                                         |
-| ----------- | ------------------------------------------------------------------- |
-| `run()`     | CommandLineRunner entry — starts the publish loop                   |
-| `publish()` | Builds and writes a single `TimeOfDayMessage`                       |
+## Actuator Endpoints
+
+Available at `http://localhost:8081/actuator/`:
+
+| Endpoint                                   | Purpose                                |
+| ------------------------------------------ | -------------------------------------- |
+| `/actuator/health`                         | DDS health indicator (domain ID, role) |
+| `/actuator/metrics/dds.messages.published` | Total messages published               |
+| `/actuator/loggers/net.edwardsonthe`       | View/change log levels at runtime      |
+| `/actuator/info`                           | Application name, description, step    |
+| `/actuator/env`                            | Resolved configuration properties      |
 
 ## Configuration
 
@@ -44,6 +44,7 @@ All configuration is externalized in `application.properties`:
 
 | Property                       | Default                | Description                    |
 | ------------------------------ | ---------------------- | ------------------------------ |
+| `server.port`                  | `8081`                 | HTTP port for actuator         |
 | `dds.domain-id`                | `0`                    | DDS domain ID                  |
 | `dds.topic-name`               | `TimeOfDay`            | DDS topic name                 |
 | `producer.publish-interval-ms` | `2000`                 | Milliseconds between publishes |
@@ -62,6 +63,7 @@ java -jar producer-1.0.0-SNAPSHOT.jar --dds.domain-id=1 --producer.publish-inter
 
 ## Dependencies
 
-- **spring-boot-starter** — Spring Boot auto-configuration, SLF4J/Logback logging
-- **idl** — provides generated `TimeOfDayMessage` type support classes
+- **spring-boot-starter-web** — embedded Tomcat for HTTP endpoints
+- **spring-boot-starter-actuator** — actuator framework and Micrometer metrics
+- **dds-support** — shared DDS participant config and health indicator
 - **nddsjava** — RTI Connext DDS Java API

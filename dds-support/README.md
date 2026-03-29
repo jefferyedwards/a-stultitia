@@ -6,7 +6,7 @@ Shared Spring configuration for the RTI Connext DDS `DomainParticipant` lifecycl
 
 Provides a single `@Configuration` class that creates and manages the DDS `DomainParticipant` as a Spring bean using default QoS. Domain ID and topic name are externalized to `application.properties`.
 
-## Key Class
+## Key Classes
 
 ### `DdsParticipantConfig`
 
@@ -16,11 +16,15 @@ Provides a single `@Configuration` class that creates and manages the DDS `Domai
 2. Registers the `TimeOfDayMessage` type
 3. Tears down all DDS entities on Spring context shutdown via `@PreDestroy`
 
-| Bean                | Description                                                        |
-| ------------------- | ------------------------------------------------------------------ |
-| `DomainParticipant` | Configured programmatically (transport, discovery) from properties |
+| Bean                | Description                                   |
+| ------------------- | --------------------------------------------- |
+| `DomainParticipant` | Created with default QoS on configured domain |
 
 The `getTopicName()` method exposes the configured topic name so that module-specific configs (producer/consumer) can create their topic, writer, or reader beans.
+
+### `DdsHealthIndicator`
+
+`@Component` implementing Spring Boot's `HealthIndicator` interface. Reports the DDS `DomainParticipant` status at `/actuator/health` under the `"dds"` key. Includes the domain ID and application role (derived from `spring.application.name`) in the health details.
 
 ## Configuration
 
@@ -39,6 +43,6 @@ Since this module lives in the `net.edwardsonthe.dds` package, Spring Boot's `@S
 
 ## Dependencies
 
-- **spring-boot-starter** — Spring Boot auto-configuration
+- **spring-boot-starter-actuator** — Spring Boot actuator framework and health indicator support
 - **idl** — provides `TimeOfDayMessageTypeSupport` for type registration
 - **nddsjava** — RTI Connext DDS Java API
