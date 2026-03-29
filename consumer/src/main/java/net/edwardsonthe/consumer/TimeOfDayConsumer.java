@@ -12,6 +12,8 @@ import com.rti.dds.subscription.SampleInfo;
 import com.rti.dds.subscription.SampleInfoSeq;
 import com.rti.dds.subscription.SampleStateKind;
 import com.rti.dds.subscription.ViewStateKind;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,6 +32,19 @@ import org.springframework.stereotype.Component;
 public class TimeOfDayConsumer extends DataReaderAdapter {
 
   private static final Logger log = LoggerFactory.getLogger(TimeOfDayConsumer.class);
+
+  private final Counter receivedCounter;
+
+  /**
+   * Constructs the consumer with a Micrometer registry for recording metrics.
+   *
+   * @param meterRegistry the Micrometer registry for recording received message counts
+   */
+  public TimeOfDayConsumer(MeterRegistry meterRegistry) {
+    this.receivedCounter = Counter.builder("dds.messages.received")
+        .description("Total messages received from DDS")
+        .register(meterRegistry);
+  }
 
   /**
    * Called by DDS when one or more {@link TimeOfDayMessage} samples are available.
@@ -58,6 +73,7 @@ public class TimeOfDayConsumer extends DataReaderAdapter {
         SampleInfo info = (SampleInfo) infoSeq.get(i);
         if (info.valid_data) {
           TimeOfDayMessage message = (TimeOfDayMessage) dataSeq.get(i);
+          receivedCounter.increment();
           log.info("Received [{}]: {} — {}", message.messageId, message.timestamp, message.quote);
         }
       }

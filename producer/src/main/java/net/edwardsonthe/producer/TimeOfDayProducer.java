@@ -3,6 +3,8 @@ package net.edwardsonthe.producer;
 import net.edwardsonthe.messages.TimeOfDayMessage;
 import net.edwardsonthe.messages.TimeOfDayMessageDataWriter;
 import com.rti.dds.infrastructure.InstanceHandle_t;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +38,7 @@ public class TimeOfDayProducer implements CommandLineRunner {
   private static final Logger log = LoggerFactory.getLogger(TimeOfDayProducer.class);
 
   private final TimeOfDayMessageDataWriter writer;
+  private final Counter publishCounter;
   private final List<String> quotes;
   private int quoteIndex = 0;
   private int messageId = 0;
@@ -44,14 +47,20 @@ public class TimeOfDayProducer implements CommandLineRunner {
   private int publishIntervalMs;
 
   /**
-   * Constructs the producer with an injected DDS data writer and quotes resource.
+   * Constructs the producer with an injected DDS data writer, meter registry,
+   * and quotes resource.
    *
-   * @param writer     the DDS data writer for publishing messages
-   * @param quotesFile the resource containing quotes, one per line
+   * @param writer        the DDS data writer for publishing messages
+   * @param meterRegistry the Micrometer registry for recording metrics
+   * @param quotesFile    the resource containing quotes, one per line
    */
   public TimeOfDayProducer(TimeOfDayMessageDataWriter writer,
+                           MeterRegistry meterRegistry,
                            @Value("${producer.quotes-file:classpath:quotes.txt}") Resource quotesFile) {
     this.writer = writer;
+    this.publishCounter = Counter.builder("dds.messages.published")
+        .description("Total messages published to DDS")
+        .register(meterRegistry);
     this.quotes = loadQuotes(quotesFile);
   }
 
@@ -85,6 +94,7 @@ public class TimeOfDayProducer implements CommandLineRunner {
     quoteIndex = (quoteIndex + 1) % quotes.size();
 
     writer.write(message, InstanceHandle_t.HANDLE_NIL);
+    publishCounter.increment();
     log.info("Published [{}]: {} — {}", message.messageId, message.timestamp, message.quote);
   }
 
