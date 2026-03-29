@@ -43,6 +43,7 @@ a-stultitia/
 ├── README.md                  # This file
 ├── STEP-1.md                  # Step 1: Raw RTI DDS Producer/Consumer
 ├── STEP-2.md                  # Step 2: Spring Boot Conversion
+├── STEP-3.md                  # Step 3: Spring Boot Actuators
 ├── demo/                      # Runtime scripts and configuration
 │   ├── README.md              # Build, run, and test instructions
 │   └── bin/
