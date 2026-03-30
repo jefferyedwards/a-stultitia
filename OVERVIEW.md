@@ -3,6 +3,8 @@
 > _"The true cost of software is not in its initial development, but in its ongoing maintenance."_
 > --- Martin Fowler, [Refactoring](https://martinfowler.com/books/refactoring.html)
 
+**Source Repository:** [github.com/jefferyedwards/a-stultitia](https://github.com/jefferyedwards/a-stultitia)
+
 ## Introduction
 
 This tutorial demonstrates a pragmatic, incremental approach to modernizing a legacy Java application that uses [RTI Connext DDS](https://www.rti.com/products/connext-dds-professional) for real-time messaging. Over five steps, the application evolves from a tightly coupled, hard-to-operate codebase into a Spring-based system with pluggable messaging infrastructure --- all without rewriting from scratch.
