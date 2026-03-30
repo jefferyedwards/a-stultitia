@@ -42,14 +42,12 @@ After the last quote is published, the cycle restarts from the beginning.
 
 All configuration is externalized in `application.properties`:
 
-| Property                       | Default                | Description                     |
-| ------------------------------ | ---------------------- | ------------------------------- |
-| `dds.domain-id`                | `0`                    | DDS domain ID                   |
-| `dds.topic-name`               | `TimeOfDay`            | DDS topic name                  |
-| `dds.transport`                | `UDPv4`                | DDS transport                   |
-| `dds.discovery.peers`          | `127.0.0.1`            | Comma-separated discovery peers |
-| `producer.publish-interval-ms` | `2000`                 | Milliseconds between publishes  |
-| `producer.quotes-file`         | `classpath:quotes.txt` | Resource path to quotes file    |
+| Property                       | Default                | Description                    |
+| ------------------------------ | ---------------------- | ------------------------------ |
+| `dds.domain-id`                | `0`                    | DDS domain ID                  |
+| `dds.topic-name`               | `TimeOfDay`            | DDS topic name                 |
+| `producer.publish-interval-ms` | `2000`                 | Milliseconds between publishes |
+| `producer.quotes-file`         | `classpath:quotes.txt` | Resource path to quotes file   |
 
 Override at runtime without recompilation:
 

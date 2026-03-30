@@ -38,12 +38,10 @@ The callback executes on a **DDS-managed thread**, not a Spring-managed thread.
 
 All configuration is externalized in `application.properties`:
 
-| Property              | Default     | Description                     |
-| --------------------- | ----------- | ------------------------------- |
-| `dds.domain-id`       | `0`         | DDS domain ID                   |
-| `dds.topic-name`      | `TimeOfDay` | DDS topic name                  |
-| `dds.transport`       | `UDPv4`     | DDS transport                   |
-| `dds.discovery.peers` | `127.0.0.1` | Comma-separated discovery peers |
+| Property         | Default     | Description    |
+| ---------------- | ----------- | -------------- |
+| `dds.domain-id`  | `0`         | DDS domain ID  |
+| `dds.topic-name` | `TimeOfDay` | DDS topic name |
 
 Override at runtime without recompilation:
 
