@@ -134,12 +134,12 @@ a-stultitia/
 │   └── src/main/
 │       ├── java/net/edwardsonthe/dds/
 │       │   ├── DdsAutoConfiguration.java            # NEW — auto-configuration entry point
-│       │   ├── DdsParticipantConfig.java
+│       │   ├── DdsParticipantConfig.java            # MODIFIED — @Profile, Topic bean
 │       │   ├── DdsProducerConfig.java               # NEW
 │       │   ├── DdsConsumerConfig.java               # NEW
 │       │   ├── DdsOutboundChannelAdapter.java       # NEW
 │       │   ├── DdsInboundChannelAdapter.java        # NEW
-│       │   └── DdsHealthIndicator.java
+│       │   └── DdsHealthIndicator.java              # MODIFIED — @Profile added
 │       └── resources/META-INF/spring/
 │           └── ...AutoConfiguration.imports         # NEW
 ├── producer/                                        # SIMPLIFIED — transport-agnostic
