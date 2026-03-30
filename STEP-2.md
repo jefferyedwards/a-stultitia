@@ -70,8 +70,6 @@ Previously compiled into the source as `static final` constants, now in `applica
 ```properties
 dds.domain-id=0
 dds.topic-name=TimeOfDay
-dds.transport=UDPv4
-dds.discovery.peers=127.0.0.1
 producer.publish-interval-ms=2000
 producer.quotes-file=classpath:quotes.txt
 ```
@@ -84,7 +82,7 @@ java -jar producer-1.0.0-SNAPSHOT.jar --dds.domain-id=1 --producer.publish-inter
 
 ### DDS Setup: Manual → Spring-Managed Beans
 
-A shared `dds-support` module provides `DdsParticipantConfig` (`@Configuration`) that creates the `DomainParticipant` as a Spring bean — configured programmatically (transport, discovery peers) from `application.properties`. `@PreDestroy` handles orderly DDS teardown — no more manual shutdown hooks.
+A shared `dds-support` module provides `DdsParticipantConfig` (`@Configuration`) that creates the `DomainParticipant` as a Spring bean with default QoS. Domain ID and topic name are externalized to `application.properties`. `@PreDestroy` handles orderly DDS teardown — no more manual shutdown hooks.
 
 Each module has a slim `DdsConfig` class that creates only its specific bean:
 
@@ -103,6 +101,10 @@ Each module has a slim `DdsConfig` class that creates only its specific bean:
 - `spring-boot-maven-plugin` produces executable fat JARs
 - `includeSystemScope=true` bundles `nddsjava.jar` into the fat JAR
 - Run scripts simplified to `java -jar` (only native library path setup remains)
+
+### Logging: Manual Config → Auto-Configured
+
+- `logback.xml` removed from both producer and consumer — Spring Boot auto-configures SLF4J/Logback with sensible defaults
 
 ### DDS QoS: XML File → Default QoS
 

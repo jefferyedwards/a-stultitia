@@ -125,6 +125,7 @@ a-stultitia/
 ├── idl/                                             # Unchanged
 ├── dds-support/                                     # Unchanged
 ├── kafka-support/                                   # NEW — Kafka transport module
+│   ├── README.md
 │   ├── pom.xml
 │   └── src/main/
 │       ├── java/net/edwardsonthe/kafka/

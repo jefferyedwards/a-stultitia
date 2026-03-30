@@ -62,6 +62,8 @@ Both producer and consumer now run an embedded Tomcat alongside their DDS messag
 - **Producer:** `server.port=8081`
 - **Consumer:** `server.port=8082`
 
+The consumer's `spring.main.keep-alive=true` (from Step 2) is no longer needed — embedded Tomcat keeps the application alive.
+
 ### Actuator Endpoints Enabled
 
 | Endpoint     | URL                     | Purpose                                         |
