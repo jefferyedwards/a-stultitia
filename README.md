@@ -21,6 +21,10 @@ Each step introduces modern frameworks and architectural patterns, progressively
 | 4    | `step-4` | Introduce Spring Integration with custom DDS channel adapters      |
 | 5    | `step-5` | Swap messaging to Kafka via configuration — zero code changes      |
 
+## Getting Started
+
+Start with the [Tutorial Overview](OVERVIEW.md) for a guided walkthrough of the modernization journey --- including the design patterns, technologies, and architectural decisions behind each step.
+
 ## Navigating the Tutorial
 
 Each step builds incrementally on the previous one. To follow along:
