@@ -145,7 +145,7 @@ This is the pivotal step. [Spring Integration](https://spring.io/projects/spring
 - Auto-configuration makes transport modules self-registering
 
 ```mermaid
-flowchart LR
+flowchart TD
   classDef shade1 fill:#23445D,stroke:#5D7F99,rx:10,color:#FFFFFF
   classDef shade2 fill:#AE4132,stroke:#FAD9D5,rx:10,color:#FFFFFF
   classDef shade3 fill:#777777,stroke:#CCCCCC,rx:10,color:#FFFFFF
@@ -159,23 +159,23 @@ flowchart LR
     PP --> OC --> OA
   end
 
-  subgraph DDS
-    Topic{{"TimeOfDay"}}
+  subgraph Transport
+    DDS{{"DDS — TimeOfDay"}}
   end
 
   subgraph Consumer Application
-    direction RL
+    direction LR
     IA["**DdsInboundAdapter**<br/>@Profile(dds)"]
     IC["inboundChannel"]
     CC["**TimeOfDayConsumer**<br/>@ServiceActivator"]
     IA --> IC --> CC
   end
 
-  OA -- "UDPv4" --> Topic --> IA
+  OA -- "UDPv4" --> DDS --> IA
 
   class PP shade1
   class CC shade2
-  class Topic shade3
+  class DDS shade3
   class OA,IA shade4
   class OC,IC shade3
 ```
@@ -235,18 +235,29 @@ These files are identical between Step 4 and Step 5:
 **Same business logic. Same channels. Different transport. One property change.**
 
 ```mermaid
-flowchart LR
+flowchart TD
   classDef shade1 fill:#23445D,stroke:#5D7F99,rx:10,color:#FFFFFF
   classDef shade2 fill:#AE4132,stroke:#FAD9D5,rx:10,color:#FFFFFF
   classDef shade3 fill:#777777,stroke:#CCCCCC,rx:10,color:#FFFFFF
   classDef shade4 fill:#2D6A4F,stroke:#95D5B2,rx:10,color:#FFFFFF
 
-  PP["**TimeOfDayProducer**"] --> OC["outboundChannel"]
-  OC --> KOA["**KafkaOutbound<br/>Adapter**"]
-  KOA --> KAFKA{{"Kafka"}}
-  KAFKA --> KIA["**KafkaInbound<br/>Adapter**"]
-  KIA --> IC["inboundChannel"]
-  IC --> CC["**TimeOfDayConsumer**"]
+  subgraph Producer Application
+    direction LR
+    PP["**TimeOfDayProducer**"] --> OC["outboundChannel"]
+    OC --> KOA["**KafkaOutbound<br/>Adapter**"]
+  end
+
+  subgraph Transport
+    KAFKA{{"Kafka — time-of-day"}}
+  end
+
+  subgraph Consumer Application
+    direction LR
+    KIA["**KafkaInbound<br/>Adapter**"] --> IC["inboundChannel"]
+    IC --> CC["**TimeOfDayConsumer**"]
+  end
+
+  KOA --> KAFKA --> KIA
 
   class PP shade1
   class CC shade2
