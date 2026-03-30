@@ -1,6 +1,6 @@
 # Tutorial Overview: Modernizing a Legacy Java Messaging Application
 
-> *"The true cost of software is not in its initial development, but in its ongoing maintenance."*
+> _"The true cost of software is not in its initial development, but in its ongoing maintenance."_
 > --- Martin Fowler, [Refactoring](https://martinfowler.com/books/refactoring.html)
 
 ## Introduction
@@ -47,9 +47,9 @@ flowchart LR
 
 **Legacy pain points:**
 
-| Pain Point              | Impact                                                   |
-| ----------------------- | -------------------------------------------------------- |
-| Hard-coded configuration | Any change requires recompilation and redeployment       |
+| Pain Point               | Impact                                                    |
+| ------------------------ | --------------------------------------------------------- |
+| Hard-coded configuration | Any change requires recompilation and redeployment        |
 | Manual DDS lifecycle     | Boilerplate setup/teardown code duplicated in each module |
 | No dependency injection  | Components are tightly coupled and difficult to test      |
 | No health monitoring     | No way to know if the application is running correctly    |
@@ -114,13 +114,13 @@ The first modernization step replaces the manual application scaffold with [Spri
 - A custom `DdsHealthIndicator` reports DDS connection status
 - [Micrometer](https://micrometer.io/) counters track messages published and received
 
-| Endpoint     | URL                     | Purpose                                         |
-| ------------ | ----------------------- | ----------------------------------------------- |
-| Health       | `/actuator/health`      | Liveness check with custom DDS health indicator |
-| Info         | `/actuator/info`        | Application name, description, tutorial step    |
-| Loggers      | `/actuator/loggers`     | View and change log levels at runtime           |
-| Metrics      | `/actuator/metrics`     | JVM, process, and custom DDS message counters   |
-| Env          | `/actuator/env`         | Resolved configuration properties               |
+| Endpoint | URL                 | Purpose                                         |
+| -------- | ------------------- | ----------------------------------------------- |
+| Health   | `/actuator/health`  | Liveness check with custom DDS health indicator |
+| Info     | `/actuator/info`    | Application name, description, tutorial step    |
+| Loggers  | `/actuator/loggers` | View and change log levels at runtime           |
+| Metrics  | `/actuator/metrics` | JVM, process, and custom DDS message counters   |
+| Env      | `/actuator/env`     | Resolved configuration properties               |
 
 **Why this matters:** Operational visibility is a prerequisite for running any application in production. The ability to check health, inspect configuration, change log levels, and track metrics --- all without restarting --- transforms a black-box application into one that can be monitored, diagnosed, and managed. Organizations that have adopted actuator-based monitoring consistently report faster incident response and reduced mean time to recovery ([Spring Boot in Production](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html)).
 
@@ -190,13 +190,13 @@ writer.write(ddsMessage, InstanceHandle_t.HANDLE_NIL);
 outboundChannel.send(MessageBuilder.withPayload(event).build());
 ```
 
-| Concern            | Before (Step 3)               | After (Step 4)                                |
-| ------------------ | ----------------------------- | --------------------------------------------- |
-| Business logic     | Directly calls DDS API        | Sends/receives via channels, zero DDS imports |
-| Transport swap     | Requires code changes         | Profile-based: change one property            |
-| Message model      | DDS `TimeOfDayMessage`        | Transport-neutral `TimeOfDayEvent` POJO       |
-| DDS code isolation | Mixed with business logic     | Isolated in `dds-support` module              |
-| Testability        | Requires running DDS          | Business logic testable with mock channels    |
+| Concern            | Before (Step 3)           | After (Step 4)                                |
+| ------------------ | ------------------------- | --------------------------------------------- |
+| Business logic     | Directly calls DDS API    | Sends/receives via channels, zero DDS imports |
+| Transport swap     | Requires code changes     | Profile-based: change one property            |
+| Message model      | DDS `TimeOfDayMessage`    | Transport-neutral `TimeOfDayEvent` POJO       |
+| DDS code isolation | Mixed with business logic | Isolated in `dds-support` module              |
+| Testability        | Requires running DDS      | Business logic testable with mock channels    |
 
 **Why this matters:** Decoupling business logic from infrastructure is the single most impactful architectural change in this tutorial. It transforms messaging from a hard-wired dependency into a pluggable concern. This is the pattern that enables organizations to migrate from proprietary middleware to open-source alternatives incrementally, without a risky big-bang rewrite. Netflix, LinkedIn, and Uber have all documented similar migration strategies when moving between messaging systems ([Confluent: Apache Kafka Migration Patterns](https://developer.confluent.io/courses/architecture/migration/)).
 
@@ -215,6 +215,8 @@ outboundChannel.send(MessageBuilder.withPayload(event).build());
 **Branch:** `step-5` | **Key Concept:** Configuration-driven infrastructure
 
 The final step proves the abstraction works. Apache Kafka replaces RTI Connext DDS as the messaging transport --- **without modifying a single line of business logic**.
+
+Kafka was chosen for this tutorial as a widely adopted, open-source messaging platform, but it is just one of many options. Spring Integration provides [channel adapters for a broad range of external systems](https://docs.spring.io/spring-integration/reference/endpoint-summary.html) --- including [JMS](https://docs.spring.io/spring-integration/reference/jms.html), [AMQP (RabbitMQ)](https://docs.spring.io/spring-integration/reference/amqp.html), [MQTT](https://docs.spring.io/spring-integration/reference/mqtt.html), [AWS SQS/SNS](https://docs.awspring.io/spring-cloud-aws/docs/current/reference/html/index.html#sqs-integration), [Apache Pulsar](https://docs.spring.io/spring-integration/reference/pulsar.html), and more. The same abstraction pattern used here would apply to any of them: write a new transport module, activate it with a profile, and the business logic remains untouched.
 
 **What changes:**
 
@@ -292,13 +294,13 @@ flowchart TD
 
 ## The Complete Journey
 
-| Step | What Changed                                     | Key Concept                         | Design Patterns                               |
-| ---- | ------------------------------------------------ | ----------------------------------- | --------------------------------------------- |
-| 1    | Raw RTI DDS, shell scripts, SLF4J logging        | Baseline legacy application         | ---                                           |
-| 2    | Spring Boot, externalized config, fat JARs       | Framework adoption                  | Dependency Injection, IoC, Externalized Config |
-| 3    | Actuators: health, metrics, loggers              | Operational visibility              | Health Check, Observer                         |
+| Step | What Changed                                     | Key Concept                         | Design Patterns                                   |
+| ---- | ------------------------------------------------ | ----------------------------------- | ------------------------------------------------- |
+| 1    | Raw RTI DDS, shell scripts, SLF4J logging        | Baseline legacy application         | ---                                               |
+| 2    | Spring Boot, externalized config, fat JARs       | Framework adoption                  | Dependency Injection, IoC, Externalized Config    |
+| 3    | Actuators: health, metrics, loggers              | Operational visibility              | Health Check, Observer                            |
 | 4    | Spring Integration, transport auto-configuration | Messaging abstraction               | Hexagonal Architecture, Channel Adapter, Strategy |
-| 5    | Kafka transport via profile swap                 | Configuration-driven infrastructure | (Validates patterns from Step 4)              |
+| 5    | Kafka transport via profile swap                 | Configuration-driven infrastructure | (Validates patterns from Step 4)                  |
 
 ## Design Patterns Summary
 
@@ -338,7 +340,7 @@ From Hohpe and Woolf's [Enterprise Integration Patterns](https://www.enterprisei
 
 1. **Modernize incrementally.** Each step in this tutorial is a self-contained improvement that delivers value independently. You do not need to complete all five steps to benefit --- even adopting Spring Boot alone (Step 2) eliminates significant boilerplate and unlocks the broader ecosystem.
 
-2. **Decouple before you swap.** The transport swap in Step 5 is trivial *because* Step 4 established the abstraction layer. Attempting to swap DDS for Kafka without the channel abstraction would have required rewriting every component. Invest in the abstraction first.
+2. **Decouple before you swap.** The transport swap in Step 5 is trivial _because_ Step 4 established the abstraction layer. Attempting to swap DDS for Kafka without the channel abstraction would have required rewriting every component. Invest in the abstraction first.
 
 3. **Operational visibility is not optional.** Step 3 adds zero business functionality, yet it transforms the application from a black box into something that can be monitored, diagnosed, and managed in production. This is table stakes for any application that runs beyond a developer's laptop.
 
@@ -348,16 +350,16 @@ From Hohpe and Woolf's [Enterprise Integration Patterns](https://www.enterprisei
 
 ## Technology Reference
 
-| Technology                                                                                     | Role in Tutorial                                   | Steps     |
-| ---------------------------------------------------------------------------------------------- | -------------------------------------------------- | --------- |
-| [RTI Connext DDS](https://www.rti.com/products/connext-dds-professional)                       | Legacy messaging transport                         | 1 --- 5   |
-| [Spring Boot](https://spring.io/projects/spring-boot)                                          | Application framework, dependency injection        | 2 --- 5   |
-| [Spring Boot Actuators](https://docs.spring.io/spring-boot/reference/actuator/)                | Health, metrics, logging, configuration endpoints  | 3 --- 5   |
-| [Micrometer](https://micrometer.io/)                                                           | Application metrics and counters                   | 3 --- 5   |
-| [Spring Integration](https://spring.io/projects/spring-integration)                            | Messaging abstraction, channel adapters            | 4 --- 5   |
-| [Apache Kafka](https://kafka.apache.org/)                                                      | Cloud-native messaging transport                   | 5         |
-| [Spring Kafka](https://spring.io/projects/spring-kafka)                                        | Kafka integration for Spring applications          | 5         |
-| [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/)              | Architectural patterns for messaging systems       | 4 --- 5   |
+| Technology                                                                        | Role in Tutorial                                  | Steps   |
+| --------------------------------------------------------------------------------- | ------------------------------------------------- | ------- |
+| [RTI Connext DDS](https://www.rti.com/products/connext-dds-professional)          | Legacy messaging transport                        | 1 --- 5 |
+| [Spring Boot](https://spring.io/projects/spring-boot)                             | Application framework, dependency injection       | 2 --- 5 |
+| [Spring Boot Actuators](https://docs.spring.io/spring-boot/reference/actuator/)   | Health, metrics, logging, configuration endpoints | 3 --- 5 |
+| [Micrometer](https://micrometer.io/)                                              | Application metrics and counters                  | 3 --- 5 |
+| [Spring Integration](https://spring.io/projects/spring-integration)               | Messaging abstraction, channel adapters           | 4 --- 5 |
+| [Apache Kafka](https://kafka.apache.org/)                                         | Cloud-native messaging transport                  | 5       |
+| [Spring Kafka](https://spring.io/projects/spring-kafka)                           | Kafka integration for Spring applications         | 5       |
+| [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/) | Architectural patterns for messaging systems      | 4 --- 5 |
 
 ## Further Reading
 
